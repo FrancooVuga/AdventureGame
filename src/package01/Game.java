@@ -267,7 +267,7 @@ public class Game {
 			playerHP = playerHP + 2;
 			mainTextArea.setText("There is a river.\n You drink water and rest at the riverside.\n\n(Your HP is recovered by 2)");
 		}
-		else {
+		else { // Si el usuario tiene mas de 13 de vida no se recupera
 			mainTextArea.setText("There is a river.\n You drink water and rest at the riverside.");
 		}
 		hpLabelNumber.setText(Integer.toString(playerHP));
