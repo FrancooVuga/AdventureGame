@@ -27,7 +27,8 @@ public class Game {
 	JTextArea mainTextArea;
 	//TitleScreenHandler tsHandler = new TitleScreenHandler();
 	ChoiceHandler choiceHandler = new ChoiceHandler();
-	int playerHP;
+	int playerHP, monsterHP;
+	boolean silverRing;
 	String weapon, position;
 
 
@@ -201,6 +202,8 @@ public class Game {
 		//Condicion inicial
 		playerHP = 15;
 		weapon = "Knife";
+		monsterHP = 20;
+		silverRing = false;
 
 		weaponLabelName.setText(weapon);
 		hpLabelNumber.setText(Integer.toString(playerHP));
@@ -280,10 +283,120 @@ public class Game {
 
 	public void east(){
 		position = "east";
+		mainTextArea.setText("You walked into a forest and found a Long Sword!\n\n(You obtained a Long Sword)");
+		weapon = "Long Sword";
+		weaponLabelName.setText(weapon);
+		choice1.setText("Go west");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
 	}
 
 	public void west(){
 		position = "west";
+
+		mainTextArea.setText("You encounter a goblin!");
+		
+
+		choice1.setText("Fight");
+		choice2.setText("Run");
+		choice3.setText("");
+		choice4.setText("");
+	}
+
+	public void fight(){
+		position = "fight";
+
+		mainTextArea.setText("Monster HP: " + monsterHP + "\n\nWhat do you do?");
+		choice1.setText("Attack");
+		choice2.setText("Run");
+		choice3.setText("");
+		choice4.setText("");
+
+	}
+
+	public void playerAttack(){
+		position = "playerAttack";
+
+		int damage = weapon == "Knife" ? 3 : 12; // Si el arma es un cuchillo, el daño es [0,2], sino es [0,4]
+		int playerDamage = new java.util.Random().nextInt(damage); // Genera un numero random de ataque entre {0,1,2}
+
+		mainTextArea.setText("You attacked the monster and gave " + playerDamage + " damage!");
+		monsterHP -= playerDamage;
+
+		choice1.setText(">");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+
+	}
+
+	public void monsterAttack(){
+		position = "monsterAttack";
+
+		int monsterDamage = new java.util.Random().nextInt(6);
+
+		mainTextArea.setText("The monster attacked you and have " + monsterDamage + " damage!");
+
+		playerHP = playerHP - monsterDamage < 0 ? 0 : playerHP - monsterDamage; 
+		hpLabelNumber.setText(Integer.toString(playerHP));
+
+		choice1.setText(">");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+
+	}
+
+	public void win(){
+		position = "win";
+
+		mainTextArea.setText("You defeated the monster!\nThe monster dropped a ring!\n\n(You obteined a Silver Ring)");
+
+		silverRing = true;
+
+		choice1.setText("Go east");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+	}
+
+	public void lose(){
+		position = "lose";
+
+		mainTextArea.setText("You are dead!\n\n<GAME OVER>");
+
+		choice1.setText("");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+		// Oculto los botones:	
+		choice1.setVisible(false);
+		choice2.setVisible(false);
+		choice3.setVisible(false);
+		choice4.setVisible(false);
+
+		 // Deshabilito el componente mainTextArea para no poder interactuar y que aparezca el cursor cuando le hago click:
+		 mainTextArea.setEnabled(false);
+	}
+
+	public void ending(){
+		position = "ending"; // Creo que no es necesario
+
+		mainTextArea.setText("Gaurd: Oh you killed that gobling?\nThank you so much. You are a true hero!\nWelcome to out town\n\n<THE END>");
+		mainTextArea.setFont(normalFont);
+		choice1.setText("");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+		// Oculto los botones:	
+		choice1.setVisible(false);
+		choice2.setVisible(false);
+		choice3.setVisible(false);
+		choice4.setVisible(false);
+
+		 // Deshabilito el componente mainTextArea para no poder interactuar y que aparezca el cursor cuando le hago click:
+		 mainTextArea.setEnabled(false);
 	}
 
 	// Implementacion generica para agregar accion a un boton (Lo evito usando: startButton.addActionListener((e)-> createGameScreen());)
@@ -304,11 +417,17 @@ public class Game {
 			switch(position){ // Primero veo en que pantalla estoy
 				case "townGate":
 					switch(yourChoice){ // Aca veo que boton clickie
-						case "c1": talkGuard(); break;
+						case "c1":
+							if(silverRing == true){
+								ending();
+							}
+							else{
+								talkGuard();
+							}
+							break;
 						case "c2": attackGuard(); break;
 						case "c3": crossRoad(); break;
 						case "c4": break;		
-						
 					}
 					break;
 
@@ -323,15 +442,15 @@ public class Game {
 
 				case "attackGuard":
 					switch(yourChoice){
-						case "c1": townGate();break;
+						case "c1": townGate(); break;
 					}
 					break;
 				case "crossRoad":
 					switch(yourChoice){
 						case "c1": north(); break;
-						case "c2": break;
+						case "c2": east(); break;
 						case "c3": townGate(); break;
-						case "c4": break;
+						case "c4": west(); break;
 					}
 					break;
 				case "north":
@@ -339,8 +458,54 @@ public class Game {
 						case "c1": crossRoad(); break;
 					}
 					break;
+				case "east":
+					switch(yourChoice){
+						case "c1": crossRoad(); break;
+					}
+					break;
+				case "west":
+					switch(yourChoice){
+						case "c1": fight(); break;
+						case "c2": crossRoad(); break;
+					}
+					break;
+				case "fight":
+					switch(yourChoice){
+						case "c1": playerAttack(); break;
+						case "c2": crossRoad(); break;
+					}
+					break;
+				case "playerAttack":
+					switch(yourChoice){
+						case "c1":
+							if(monsterHP <= 0){
+								win();
+							}
+							else{
+								monsterAttack();
+							}
+							break;
+					}
+					break;
+				case "monsterAttack":
+					switch(yourChoice){
+						case "c1": 
+							if(playerHP <= 0){
+								lose();
+							}
+							else{
+								fight();
+							}
+							break;
+					}
+					break;
+				case "win":
+					switch(yourChoice){
+						case "c1": crossRoad(); break;
+					}
+					break;
 			}
 		}
 	}
-
 }
+
